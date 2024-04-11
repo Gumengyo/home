@@ -2,27 +2,27 @@
   {
     "icon": "Blog",
     "name": "博客",
-    "link": "https://blog.imsyy.top/"
+    "link": "https://blog.gumengyo.top/"
   },
   {
     "icon": "Cloud",
     "name": "网盘",
-    "link": "https://pan.imsyy.top/"
+    "link": "https://cloudreve.gumengyo.top/"
+  },
+  {
+    "icon": "Tasks",
+    "name": "备忘录",
+    "link": "https://memos.gumengyo.top/"
   },
   {
     "icon": "CompactDisc",
     "name": "音乐",
-    "link": "https://music.imsyy.top/"
+    "link": "https://tool.liumingye.cn/music/#/"
   },
   {
     "icon": "Compass",
     "name": "起始页",
-    "link": "https://nav.imsyy.top/"
-  },
-  {
-    "icon": "Book",
-    "name": "网址集",
-    "link": "https://web.imsyy.top/"
+    "link": "https://snavigation.gumengyo.top/"
   },
   {
     "icon": "Fire",
@@ -30,8 +30,13 @@
     "link": "https://hot.imsyy.top/"
   },
   {
+    "icon": "Robot",
+    "name": "GPT4",
+    "link": "https://www.coze.com/store/bot/7350941847826497538?bid=MDQEED0VkGaLYeK-MfL-UOOrBuwEHt8C4T4rrgsscUkge91Sy9isPs_7G5CBVu-E4bz6nQQA&from=bots_card&panel=1"
+  },
+  {
     "icon": "LaptopCode",
     "name": "站点监测",
-    "link": "https://status.imsyy.top/"
+    "link": "https://kuma.gumengyo.top/status/monitor"
   }
 ]
