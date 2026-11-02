@@ -34,24 +34,20 @@ Simple little homepage, had enough of the original one and made a new one
 
 * **Installation** [node.js](https://nodejs.org/zh-cn/) **Environment**
 
-  > node > 16.16.0  
-  > npm > 8.15.0
+  > Node.js 22.13+ or 24+ (24.x recommended). Use npm and the committed `package-lock.json`.
   
 * Then run the `cmd` terminal with **administrator privileges** and `cd` to the project root directory
 * In the `terminal` type:
 
 ```bash
-# Install pnpm
-npm install -g pnpm
-
 # Install the dependencies
-pnpm install
+npm ci
 
 # Preview
-pnpm dev
+npm run dev
 
 # Build
-pnpm build
+npm run build
 ```
 
 > Once the build is complete, the files in the `dist` folder can be uploaded to the server or imported and automatically deployed with one click using a hosting platform such as `Vercel`.
@@ -81,6 +77,12 @@ VITE_SONG_TYPE = "playlist"
 # Playback ID
 VITE_SONG_ID = "7452421335"
 ```
+
+#### Linyu source compatibility
+
+Meting remains the default. To reuse Linyu's upstream source, merge the settings in [.env.music.example](./.env.music.example) into `.env.local`. Set `VITE_SONG_PROVIDER=linyu`, `LINYU_ENV_FILE` to your local Linyu `.env`, and `MUSIC_PLAYLIST_FILE` to a playlist matching [music.example.json](./music.example.json). Only `MUSIC_API_URL`, `MUSIC_API_KEY`, and `MUSIC_QUALITIES` are imported. This does not connect to Linyu's account sessions, encrypted admin settings, or library.
+
+For production, provide those three server variables directly, run `npm run build && npm start`, and route `/api/music/*` to the Node service (port 12445 by default). This mode needs a running server; static-only hosting can continue using Meting. Never prefix source keys with `VITE_`. HTTP audio is streamed through the server with Range / 206 support; HTTPS audio uses a direct redirect. See the [Chinese README](./README.md) for playlist IDs, quality settings, and Docker instructions.
 
 ### Fonts
 

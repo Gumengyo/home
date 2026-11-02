@@ -10,6 +10,7 @@
     :order="store.playerOrder"
     :volume="volume"
     :showLrc="true"
+    :lrcType="1"
     :listFolded="listFolded"
     :listMaxHeight="listMaxHeight"
     :noticeSwitch="false"
@@ -83,33 +84,30 @@ const listHeight = computed(() => {
   return props.listMaxHeight + "px";
 });
 
-// 初始化播放器
-onMounted(() => {
-  nextTick(() => {
-    try {
-      getPlayerList(props.songServer, props.songType, props.songId).then((res) => {
-        console.log(res);
-        // 更改播放器加载状态
-        store.musicIsOk = true;
-        // 生成歌单
-        playList.value = res;
-        console.log("音乐加载完成");
-        console.log(playList.value);
-        console.log(playIndex.value, playList.value.length, props.volume);
-      });
-    } catch (err) {
-      console.error(err);
-      store.musicIsOk = false;
-      ElMessage({
-        message: "播放器加载失败",
-        grouping: true,
-        icon: h(PlayWrong, {
-          theme: "filled",
-          fill: "#efefef",
-        }),
-      });
-    }
-  });
+// 初始化播放器；异步请求必须 await，才能捕获加载失败。
+let disposed = false;
+onBeforeUnmount(() => {
+  disposed = true;
+  store.musicIsOk = false;
+  store.setPlayerState(true);
+});
+onMounted(async () => {
+  store.musicIsOk = false;
+  try {
+    const list = await getPlayerList(props.songServer, props.songType, props.songId);
+    if (disposed) return;
+    playList.value = list;
+    await nextTick();
+    store.musicIsOk = Boolean(player.value);
+  } catch (err) {
+    if (disposed) return;
+    store.musicIsOk = false;
+    ElMessage({
+      message: err.message || "播放器加载失败",
+      grouping: true,
+      icon: h(PlayWrong, { theme: "filled", fill: "#efefef" }),
+    });
+  }
 });
 
 // 播放
@@ -153,30 +151,31 @@ const onTimeUp = () => {
 
 // 切换播放暂停事件
 const playToggle = () => {
-  player.value.toggle();
+  player.value?.toggle();
 };
 
 // 切换音量事件
 const changeVolume = (value) => {
-  player.value.setVolume(value, false);
+  player.value?.setVolume(value, false);
 };
 
 // 切换上下曲
 const changeSong = (type) => {
+  if (!player.value) return;
   type === 0 ? player.value.skipBack() : player.value.skipForward();
   nextTick(() => {
-    player.value.play();
+    player.value?.play();
   });
 };
 
 // 切换歌曲列表状态
 const toggleList = () => {
-  player.value.toggleList();
+  player.value?.toggleList();
 };
 
 // 加载音频错误
 const loadMusicError = () => {
-  let notice = "";
+  let notice;
   if (playList.value.length > 1) {
     notice = "播放歌曲出现错误，播放器将在 2s 后进行下一首";
   } else {

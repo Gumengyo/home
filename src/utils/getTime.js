@@ -72,7 +72,7 @@ export const getTimeCapsule = () => {
 // 欢迎提示
 export const helloInit = () => {
   const hour = new Date().getHours();
-  let hello = null;
+  let hello;
   if (hour < 6) {
     hello = "凌晨好";
   } else if (hour < 9) {

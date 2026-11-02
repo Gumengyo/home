@@ -13,3 +13,6 @@ dist
 build
 images
 script
+.env.local
+.env.*.local
+music.local.json
