@@ -192,6 +192,17 @@ docker run --env-file .env.local -p 12445:12445 -d home
 
 容器环境应在 `.env.local` 直接填写服务端音源变量，移除本机 `LINYU_ENV_FILE` 路径。自定义歌单需挂载到容器，并让 `MUSIC_PLAYLIST_FILE` 指向挂载路径。`VITE_SONG_PROVIDER` 是构建时设置，切换模式后需要重新构建。
 
+#### 在 Vercel 使用 Linyu 音源
+
+仓库提供 `vercel.json` 和 `api/music.mjs`，Vercel 会构建 Vite 静态页面，同时部署 `/api/music/*` 的 Node Function。构建命令为 `npm run build:vercel`，默认启用 `linyu` 模式；不需要、也不能依赖 `npm start` 在 Vercel 常驻运行。
+
+1. 在 Vercel 项目 **Settings → Environment Variables** 添加 `MUSIC_API_URL`、`MUSIC_API_KEY`，以及与 Linyu 相同的 `MUSIC_QUALITIES`（如有）。参考 [.env.vercel.example](./.env.vercel.example)。选择需要生效的 Production / Preview 环境；这些变量都不能加 `VITE_` 前缀。
+2. 云端歌单使用仓库中的 [music.playlist.json](./music.playlist.json)，已导入原主页的 35 首曲目。需要修改歌曲时编辑这个文件并重新部署。本机 `.env.local` 和 `music.local.json` 不会上传；不要在 Vercel 设置 `LINYU_ENV_FILE=D:/...`。
+3. 部署包含上述文件的新提交。只在 Vercel 点击重新部署旧提交不会补出缺失的函数代码；变更环境变量也需要重新部署才会生效。
+4. 部署完成后检查 `/api/music/list` 返回 JSON 歌单，再在浏览器打开播放器验证音频。若返回 503，请检查服务端变量；若返回 404，请检查部署提交和函数路由。升级前已打开的页面需要刷新以加载新播放器。
+
+HTTP 音频由函数流式转发，保留 Range / 206；函数最长配置为 300 秒，实际调用时长和流量受 Vercel 套餐限制。实现依据 [Vercel Node.js Functions](https://vercel.com/docs/functions/runtimes/node-js) 与 [函数配置](https://vercel.com/docs/project-configuration/vercel-json)。
+
 ### 字体
 
 现采用 `HarmonyOS Sans` 开源字体，采用字体拆分，提升加载速度

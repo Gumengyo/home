@@ -17,8 +17,10 @@ app.use(pinia);
 app.mount("#app");
 
 // PWA
+const wasControlled = Boolean(navigator.serviceWorker?.controller);
+let refreshing = false;
 navigator.serviceWorker?.addEventListener("controllerchange", () => {
-  // 弹出更新提醒
-  console.log("站点已更新，刷新后生效");
-  ElMessage("站点已更新，刷新后生效");
+  if (!wasControlled || refreshing) return;
+  refreshing = true;
+  window.location.reload();
 });

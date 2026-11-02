@@ -1,0 +1,8 @@
+.env.*
+music.local.json
+node_modules
+dist
+.git
+tests
+screenshots
+*.log

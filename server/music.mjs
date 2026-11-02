@@ -28,10 +28,12 @@ function httpUrl(value, httpsOnly = false) {
 }
 
 export function loadMusicConfig(env = process.env, cwd = process.cwd()) {
+  const vercel = env.VERCEL === "1";
   // Read only source settings. Never execute or import code from the other project.
-  const shared = env.LINYU_ENV_FILE
-    ? parseEnv(readFileSync(resolve(cwd, env.LINYU_ENV_FILE), "utf8"))
-    : {};
+  const shared =
+    !vercel && env.LINYU_ENV_FILE
+      ? parseEnv(readFileSync(resolve(cwd, env.LINYU_ENV_FILE), "utf8"))
+      : {};
   const value = (name) => env[name] ?? shared[name] ?? "";
   const baseUrl = value("MUSIC_API_URL");
   if (baseUrl) {
@@ -55,7 +57,13 @@ export function loadMusicConfig(env = process.env, cwd = process.cwd()) {
     }
   }
   const playlist = JSON.parse(
-    readFileSync(resolve(cwd, env.MUSIC_PLAYLIST_FILE || "music.example.json"), "utf8"),
+    readFileSync(
+      resolve(
+        cwd,
+        env.MUSIC_PLAYLIST_FILE || (vercel ? "music.playlist.json" : "music.example.json"),
+      ),
+      "utf8",
+    ),
   );
   if (!Array.isArray(playlist) || !playlist.length || playlist.length > 200) {
     throw new Error("Playlist must contain 1–200 tracks");

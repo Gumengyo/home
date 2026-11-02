@@ -1,0 +1,33 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist",
+  "fluid": true,
+  "functions": {
+    "api/music.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "{music.playlist.json,music.example.json}",
+      "excludeFiles": "{.env,.env.*,music.local.json,tests/**,screenshots/**}"
+    }
+  },
+  "rewrites": [{ "source": "/api/music/:path*", "destination": "/api/music.mjs" }],
+  "headers": [
+    {
+      "source": "/api/music/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "CDN-Cache-Control", "value": "no-store" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/registerSW.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }]
+    }
+  ]
+}

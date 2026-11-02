@@ -28,9 +28,18 @@ export default ({ mode }) => {
         workbox: {
           skipWaiting: true,
           clientsClaim: true,
+          cleanupOutdatedCaches: true,
+          navigateFallbackDenylist: [/^\/api\//],
           runtimeCaching: [
             {
-              urlPattern: /(.*?)\.(js|css|woff2|woff|ttf)/, // js / css 静态资源缓存
+              urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+              handler: "NetworkOnly",
+            },
+            {
+              urlPattern: ({ url }) =>
+                /\.(?:js|css|woff2?|ttf)$/.test(url.pathname) &&
+                !url.pathname.startsWith("/src/") &&
+                !["/sw.js", "/registerSW.js"].includes(url.pathname),
               handler: "CacheFirst",
               options: {
                 cacheName: "js-css-cache",
