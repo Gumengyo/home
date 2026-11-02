@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { defineConfig, loadEnv } from "vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 import { resolve } from "path";
@@ -7,17 +6,21 @@ import vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import viteCompression from "vite-plugin-compression";
+import { createMusicMiddleware } from "./server/music.mjs";
 
 // https://vitejs.dev/config/
-export default ({ mode }) =>
-  defineConfig({
+export default ({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  return defineConfig({
     plugins: [
       vue(),
       AutoImport({
+        dts: false,
         imports: ["vue"],
         resolvers: [ElementPlusResolver()],
       }),
       Components({
+        dts: false,
         resolvers: [ElementPlusResolver()],
       }),
       VitePWA({
@@ -43,9 +46,9 @@ export default ({ mode }) =>
           ],
         },
         manifest: {
-          name: loadEnv(mode, process.cwd()).VITE_SITE_NAME,
-          short_name: loadEnv(mode, process.cwd()).VITE_SITE_NAME,
-          description: loadEnv(mode, process.cwd()).VITE_SITE_DES,
+          name: env.VITE_SITE_NAME,
+          short_name: env.VITE_SITE_NAME,
+          description: env.VITE_SITE_DES,
           display: "standalone",
           start_url: "/",
           theme_color: "#424242",
@@ -90,6 +93,15 @@ export default ({ mode }) =>
         },
       }),
       viteCompression(),
+      {
+        name: "home-music",
+        configureServer(server) {
+          server.middlewares.use(createMusicMiddleware(env));
+        },
+        configurePreviewServer(server) {
+          server.middlewares.use(createMusicMiddleware(env));
+        },
+      },
     ],
     server: {
       port: "3000",
@@ -107,7 +119,6 @@ export default ({ mode }) =>
       preprocessorOptions: {
         scss: {
           charset: false,
-          additionalData: `@import "./src/style/global.scss";`,
         },
       },
     },
@@ -120,3 +131,4 @@ export default ({ mode }) =>
       },
     },
   });
+};

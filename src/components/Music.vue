@@ -116,18 +116,24 @@ const changeMusicIndex = (type) => {
   playerRef.value.changeSong(type);
 };
 
+const onKeydown = (event) => {
+  if (!store.musicIsOk || event.repeat || event.code !== "Space") return;
+  if (
+    event.target instanceof Element &&
+    event.target.closest("input, textarea, select, button, [contenteditable]")
+  )
+    return;
+  event.preventDefault();
+  changePlayState();
+};
 onMounted(() => {
-  // 空格键事件
-  window.addEventListener("keydown", (e) => {
-    if (!store.musicIsOk) {
-      return ;
-    }
-    if (e.code == "Space") {
-      changePlayState();
-    }
-  });
+  window.addEventListener("keydown", onKeydown);
   // 挂载方法至 window
   window.$openList = openMusicList;
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onKeydown);
+  if (window.$openList === openMusicList) delete window.$openList;
 });
 
 // 监听音量变化

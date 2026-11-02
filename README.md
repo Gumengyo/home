@@ -44,24 +44,20 @@
 
 * **安装** [node.js](https://nodejs.org/zh-cn/) **环境**
 
-  > node > 16.16.0  
-  > npm > 8.15.0
+  > Node.js 22.13+ 或 24+，推荐 24.x；统一使用 npm 和 `package-lock.json`
   
 * 然后以 **管理员权限** 运行 `cmd` 终端，并 `cd` 到 项目根目录
 * 在 `终端` 中输入：
 
 ```bash
-# 安装 pnpm
-npm install -g pnpm
-
 # 安装依赖
-pnpm install
+npm ci
 
 # 预览
-pnpm dev
+npm run dev
 
 # 构建
-pnpm build
+npm run build
 ```
 > 构建完成后，静态资源会在 **`dist` 目录** 中生成，可将 **`dist` 文件夹下的文件**上传至服务器，也可使用 `Vercel` 等托管平台一键导入并自动部署
 
@@ -148,6 +144,53 @@ VITE_SONG_TYPE = "playlist"
 # 播放 ID
 VITE_SONG_ID = "7452421335"
 ```
+
+#### 兼容 Linyu 的上游音源
+
+保留默认的 Meting 模式。需要复用 `D:/code/front/linyu` 的音源时，将 [.env.music.example](./.env.music.example) 中所需配置合并到项目根目录的 `.env.local`（若该文件已有配置请保留），然后重启开发服务：
+
+```dotenv
+VITE_SONG_PROVIDER=linyu
+LINYU_ENV_FILE=D:/code/front/linyu/.env
+MUSIC_PLAYLIST_FILE=./music.example.json
+```
+
+`LINYU_ENV_FILE` 只读取 `MUSIC_API_URL`、`MUSIC_API_KEY`、`MUSIC_QUALITIES` 三个变量，不启动 Linyu，也不读取它的账号、数据库和 AI 设置。主页 `.env.local` / 环境变量中同名设置优先。若音源仅保存在 Linyu 管理后台的加密配置中，请由管理员单独提供这三个服务端变量；这里不会自动解密后台配置。
+
+主页歌单使用 [music.example.json](./music.example.json) 的格式，可复制为自己的 JSON 文件并修改 `MUSIC_PLAYLIST_FILE`。每首歌曲填写 `source`、`songId`、`name`、`artist`，可选填 `cover`（HTTP/HTTPS URL）、`lrc`（LRC 正文或公开歌词 URL）、`quality`。最多 200 首；歌词不会自动从 Linyu 曲库同步，未填写时显示暂无歌词。
+
+| 平台 | source | songId |
+| --- | --- | --- |
+| 网易云 | `wy` | 歌曲 ID |
+| QQ 音乐 | `tx` | songmid |
+| 酷我 | `kw` | rid |
+| 酷狗 | `kg` | 基本 hash |
+| 咪咕 | `mg` | 内部 songId，非 copyrightId |
+
+默认优先 `320k`，未开放时使用该平台音质表的第一项；也可设置 `MUSIC_QUALITY` 或每首歌曲的 `quality`。显式指定的音质必须在音源开放列表内，空平台列表表示停用。实际播放权限仍由上游决定。
+
+开发和 `npm run preview` 已内置同域 `/api/music/*` 适配。生产环境运行：
+
+```sh
+npm ci
+npm test
+npm run lint
+npm run build
+npm start
+```
+
+默认监听 `127.0.0.1:12445`，可通过 `HOST`、`PORT` 调整。反向代理需要将 `/api/music/*` 也转发给这个 Node 服务。该模式需要服务端运行环境；仅上传 `dist` 到纯静态托管不能解析音源，纯静态部署继续使用 Meting。
+
+部署时直接提供 `MUSIC_API_URL`、`MUSIC_API_KEY`、`MUSIC_QUALITIES`，并上传主页歌单，无需依赖服务器上另一个 Linyu 项目的目录。**音源 Key 不要使用 `VITE_` 前缀**。上游音源 API 要求 HTTPS；HTTPS 音频由浏览器直接访问，HTTP 音频通过主页服务端流式转发，保留 Range / 206，不将整首歌曲读入内存。转发只允许公网地址并逐次校验重定向，实际连接固定到校验过的 DNS 地址；包含音源 Key 的播放链接会被拒绝。接口只解析配置歌单内的曲目，临时播放链接缓存 30 秒后重新获取；不复用 Linyu 的登录会话和受保护音频中转。
+
+Docker 中使用该模式：
+
+```sh
+docker build --build-arg VITE_SONG_PROVIDER=linyu -t home .
+docker run --env-file .env.local -p 12445:12445 -d home
+```
+
+容器环境应在 `.env.local` 直接填写服务端音源变量，移除本机 `LINYU_ENV_FILE` 路径。自定义歌单需挂载到容器，并让 `MUSIC_PLAYLIST_FILE` 指向挂载路径。`VITE_SONG_PROVIDER` 是构建时设置，切换模式后需要重新构建。
 
 ### 字体
 
